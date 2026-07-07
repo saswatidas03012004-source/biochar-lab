@@ -1,0 +1,1323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operational Standardization & Bio-Safety of Crop Residue Biochar</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0b0f19;
+            color: #f3f4f6;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        .glow-btn:hover {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4);
+        }
+    </style>
+</head>
+<body class="min-h-screen overflow-x-hidden flex flex-col">
+
+    <!-- Top Navigation bar -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 px-4 py-3 lg:px-8">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="h-10 w-10 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 text-emerald-400 font-extrabold text-xl">
+                    RV
+                </div>
+                <div>
+                    <h1 class="text-md lg:text-lg font-bold text-slate-100 flex items-center gap-2">
+                        Biochar Experiential Learning Lab
+                        <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full font-medium">ACY 2025-26</span>
+                    </h1>
+                    <p class="text-xs text-slate-400">RV College of Engineering • Dept. of Civil Engineering</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-6 text-xs text-slate-300">
+                <div class="hidden xl:flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="font-semibold text-slate-400">Project:</span>
+                    <span class="max-w-[340px] truncate text-slate-200">Operational Standardization & Bio-Safety Characterization</span>
+                </div>
+                <div class="flex items-center gap-3 bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800">
+                    <span class="text-slate-400"><i class="fa-solid fa-users text-emerald-400"></i> Students:</span>
+                    <span class="font-semibold text-slate-200">Saswati Das & V. Bhavishya</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-grow max-w-[1600px] w-full mx-auto p-4 lg:p-6 grid grid-cols-1 xl:grid-cols-12 gap-6">
+        
+        <!-- LEFT COLUMN: 3D Visualization Canvas & Live Kiln Controls (Takes up 5 cols) -->
+        <section class="xl:col-span-5 flex flex-col gap-6">
+            
+            <!-- 3D Viewport container -->
+            <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden flex flex-col relative group shadow-2xl">
+                <div class="absolute top-4 left-4 z-10 flex flex-col gap-1 pointer-events-none">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Live Reactor Model</span>
+                    <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                        CRIDA Carbonization Kiln
+                        <i class="fa-solid fa-circle-info text-slate-500 text-sm cursor-pointer pointer-events-auto" onclick="toggleKilnInfoModal()"></i>
+                    </h2>
+                </div>
+
+                <div class="absolute top-4 right-4 z-10 flex gap-2">
+                    <button id="btnRotate" class="p-2 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-300 hover:text-emerald-400 hover:border-emerald-500/30 transition-all text-xs flex items-center gap-1.5" title="Auto-Rotate">
+                        <i class="fa-solid fa-arrows-spin animate-spin-slow"></i> <span>Orbit</span>
+                    </button>
+                    <button id="btnResetCamera" class="p-2 rounded-lg bg-slate-950/80 border border-slate-800 text-slate-300 hover:text-emerald-400 hover:border-emerald-500/30 transition-all text-xs" title="Reset View">
+                        <i class="fa-solid fa-video"></i>
+                    </button>
+                </div>
+
+                <!-- Three.js Canvas Div -->
+                <div id="canvasContainer" class="h-[380px] lg:h-[450px] w-full cursor-grab active:cursor-grabbing bg-slate-950 relative">
+                    <!-- Loading state -->
+                    <div id="canvasLoader" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 z-20">
+                        <div class="w-10 h-10 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+                        <span class="mt-4 text-xs text-slate-400">Standardizing Thermal Grid...</span>
+                    </div>
+                </div>
+
+                <!-- Interactive HUD showing live kiln telemetry -->
+                <div class="bg-slate-950/90 border-t border-slate-800 p-4 grid grid-cols-3 gap-2 text-center text-xs">
+                    <div class="p-2 bg-slate-900/50 rounded-lg border border-slate-800/60">
+                        <span class="text-slate-400 block mb-1">Target Exhaust Gas</span>
+                        <div class="flex items-center justify-center gap-1.5 font-bold">
+                            <span id="hudSmokeColorIndicator" class="w-2.5 h-2.5 rounded-full bg-slate-300 animate-pulse"></span>
+                            <span id="hudSmokeText" class="text-slate-200">Grey/White</span>
+                        </div>
+                    </div>
+                    <div class="p-2 bg-slate-900/50 rounded-lg border border-slate-800/60">
+                        <span class="text-slate-400 block mb-1">Internal Temp Zone</span>
+                        <span id="hudTemp" class="text-amber-400 font-extrabold text-sm block">375°C</span>
+                    </div>
+                    <div class="p-2 bg-slate-900/50 rounded-lg border border-slate-800/60">
+                        <span class="text-slate-400 block mb-1">Carbonization Phase</span>
+                        <span id="hudPhase" class="text-emerald-400 font-semibold block truncate">Main Carbonization</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-time Input controller and process simulator parameters -->
+            <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 lg:p-6 shadow-2xl flex flex-col gap-6">
+                <div>
+                    <h3 class="text-sm font-extrabold uppercase text-slate-400 tracking-wider mb-1 flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-emerald-400"></i> Simulation Parameters
+                    </h3>
+                    <p class="text-xs text-slate-400">Modify the thermodynamic states to observe characterization transitions.</p>
+                </div>
+
+                <!-- Feedstock Selection Cards -->
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs font-bold text-slate-300">1. SELECT AGRICULTURAL RESIDUE</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="feedstockCastor" onclick="selectFeedstock('castor')" class="p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 text-left transition-all hover:bg-emerald-500/10 flex flex-col gap-1 focus:outline-none">
+                            <span class="text-xs font-bold text-emerald-400 flex items-center justify-between w-full">
+                                CASTOR STALKS
+                                <i class="fa-solid fa-circle-check text-xs"></i>
+                            </span>
+                            <span class="text-[10px] text-slate-400 italic">Ricinus communis</span>
+                            <span class="text-[10px] mt-1 bg-slate-950 px-1.5 py-0.5 rounded text-slate-300 w-max">C:N 36.7 • Low Ash</span>
+                        </button>
+                        <button id="feedstockCotton" onclick="selectFeedstock('cotton')" class="p-3 rounded-xl border border-slate-800 bg-slate-950 text-left transition-all hover:bg-slate-900 flex flex-col gap-1 focus:outline-none">
+                            <span class="text-xs font-bold text-slate-300 flex items-center justify-between w-full">
+                                COTTON STALKS
+                                <i class="fa-regular fa-circle text-xs text-slate-600"></i>
+                            </span>
+                            <span class="text-[10px] text-slate-400 italic">Gossypium hirsutum</span>
+                            <span class="text-[10px] mt-1 bg-slate-950 px-1.5 py-0.5 rounded text-slate-300 w-max">C:N 56.2 • Alkaline Ash</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Temperature Sliders -->
+                <div class="flex flex-col gap-2">
+                    <div class="flex justify-between items-center text-xs">
+                        <label class="font-bold text-slate-300 uppercase">2. PYROLYSIS TEMPERATURE (°C)</label>
+                        <span id="tempValueLabel" class="bg-amber-500/10 text-amber-400 border border-amber-500/20 px-2.5 py-0.5 rounded-full font-extrabold text-sm">375°C</span>
+                    </div>
+                    
+                    <input type="range" id="tempSlider" min="350" max="500" step="5" value="375" class="w-full h-2 bg-slate-950 rounded-lg appearance-none cursor-pointer accent-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
+                    
+                    <div class="flex justify-between text-[10px] text-slate-400 px-1">
+                        <span class="cursor-pointer" onclick="setTemp(350)">350°C (Low-Temp Range)</span>
+                        <span class="cursor-pointer" onclick="setTemp(425)">425°C (Transition)</span>
+                        <span class="cursor-pointer" onclick="setTemp(500)">500°C (High-Temp Range)</span>
+                    </div>
+                </div>
+
+                <!-- Dynamic Thermal Phase Metrics Info Box -->
+                <div id="phaseMetricsCard" class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs flex flex-col gap-3">
+                    <div class="flex items-center gap-2 pb-2 border-b border-slate-800">
+                        <i class="fa-solid fa-fire text-amber-500 animate-pulse"></i>
+                        <span class="font-bold text-slate-200">Molecular Rearrangement Analytics</span>
+                    </div>
+                    <div id="phaseDetails" class="text-slate-300 leading-relaxed text-[11px]">
+                        Lignocellulosic components are breaking down dynamically. Hemicellulose degradation (220°C-315°C) is transitioning into deep cellulose decomposition (315°C-400°C). Primary char structure is condensing with moderate carbon stability.
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 pt-1">
+                        <div>
+                            <span class="text-slate-400 text-[10px] block mb-0.5">Primary Solid Yield</span>
+                            <span id="metricYield" class="text-emerald-400 font-extrabold text-sm">24.4%</span>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 text-[10px] block mb-0.5">Fixed Carbon Retention</span>
+                            <span id="metricFC" class="text-emerald-400 font-extrabold text-sm">60.3%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- RIGHT COLUMN: Tabbed Analytical Dashboard (Takes up 7 cols) -->
+        <section class="xl:col-span-7 flex flex-col gap-6">
+            
+            <!-- Tab Selection Headers -->
+            <div class="bg-slate-900 p-2 rounded-2xl border border-slate-800 flex flex-wrap gap-1 shadow-md">
+                <button onclick="switchTab('characterization')" id="tabBtn-characterization" class="flex-1 py-3 px-2 rounded-xl text-xs font-bold transition-all text-emerald-400 bg-slate-950 border border-emerald-500/20 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-vial-wheat"></i> <span class="hidden sm:inline">Physicochemical Specs</span>
+                </button>
+                <button onclick="switchTab('hydrology')" id="tabBtn-hydrology" class="flex-1 py-3 px-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-950/50 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-droplet"></i> <span class="hidden sm:inline">Soil Hydrology Matrix</span>
+                </button>
+                <button onclick="switchTab('economics')" id="tabBtn-economics" class="flex-1 py-3 px-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-950/50 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-chart-line"></i> <span class="hidden sm:inline">Economics & Yields</span>
+                </button>
+                <button onclick="switchTab('deployment')" id="tabBtn-deployment" class="flex-1 py-3 px-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-950/50 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-shield-halved"></i> <span class="hidden sm:inline">Safe Deployment</span>
+                </button>
+            </div>
+
+            <!-- TAB CONTENT 1: Characterization Properties -->
+            <div id="tabContent-characterization" class="bg-slate-900 rounded-2xl border border-slate-800 p-5 lg:p-6 shadow-2xl flex flex-col gap-6">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                        Physicochemical Properties & Molecular Stability
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">Characterization metrics of synthesized biochar matrices compared to baseline crop stalks.</p>
+                </div>
+
+                <!-- Detailed Parameters Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <!-- Chemistry Readings Card -->
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col gap-3">
+                        <span class="text-xs font-bold text-slate-400 border-b border-slate-800 pb-1.5 uppercase block">Chemical Composition</span>
+                        <div class="flex flex-col gap-2.5">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Total Carbon Content:</span>
+                                <span id="charCarbon" class="font-bold text-slate-200">592.4 g/kg</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Total Nitrogen Retained:</span>
+                                <span id="charNitrogen" class="font-bold text-slate-200">12.2 g/kg</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Total Phosphorus:</span>
+                                <span id="charPhosphorus" class="font-bold text-slate-200">4.0 g/kg</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Total Potassium Concentrated:</span>
+                                <span id="charPotassium" class="font-bold text-slate-200">3.4 g/kg</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alkalinity & Cation Exchange Capacity Card -->
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col gap-3">
+                        <span class="text-xs font-bold text-slate-400 border-b border-slate-800 pb-1.5 uppercase block">Soil-Interaction Properties</span>
+                        <div class="flex flex-col gap-2.5">
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Suspension pH (1:20):</span>
+                                <span id="charPH" class="font-bold text-amber-400 text-sm">7.5</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Electrical Conductivity (EC):</span>
+                                <span id="charEC" class="font-bold text-slate-200">0.01 dS/m</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Cation Exchange Capacity:</span>
+                                <span id="charCEC" class="font-bold text-emerald-400 text-sm">31.1 cmol/kg</span>
+                            </div>
+                            <div class="flex justify-between items-center text-xs">
+                                <span class="text-slate-400">Aromatic Stability Ratio (H:C):</span>
+                                <span id="charHC" class="font-bold text-emerald-400 flex items-center gap-1.5">
+                                    <span class="text-xs">&lt; 0.48</span> 
+                                    <span class="bg-emerald-500/15 text-emerald-400 px-1 rounded text-[9px] font-normal">Highly Stable</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Proximate Analysis Progress Gauges -->
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col gap-4">
+                    <span class="text-xs font-bold text-slate-400 uppercase">Proximate Structural Shifts</span>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        
+                        <!-- Progress Circle: Fixed Carbon -->
+                        <div class="flex flex-col items-center text-center gap-2">
+                            <div class="relative w-20 h-20 flex items-center justify-center">
+                                <svg class="absolute transform -rotate-90 w-full h-full" viewBox="0 0 100 100">
+                                    <circle class="text-slate-800" stroke-width="8" stroke="currentColor" fill="transparent" r="38" cx="50" cy="50" />
+                                    <circle id="ringFC" class="text-emerald-500 transition-all duration-500" stroke-width="8" stroke-dasharray="238" stroke-dashoffset="100" stroke-linecap="round" stroke="currentColor" fill="transparent" r="38" cx="50" cy="50" />
+                                </svg>
+                                <span id="textRingFC" class="text-xs font-extrabold text-slate-200">60.3%</span>
+                            </div>
+                            <span class="text-[11px] font-bold text-slate-300">Fixed Carbon (FC)</span>
+                            <p class="text-[10px] text-slate-400 leading-normal px-2">Locks recalcitrant structural skeleton inside soil profiles.</p>
+                        </div>
+
+                        <!-- Progress Circle: Volatile Matter -->
+                        <div class="flex flex-col items-center text-center gap-2">
+                            <div class="relative w-20 h-20 flex items-center justify-center">
+                                <svg class="absolute transform -rotate-90 w-full h-full" viewBox="0 0 100 100">
+                                    <circle class="text-slate-800" stroke-width="8" stroke="currentColor" fill="transparent" r="38" cx="50" cy="50" />
+                                    <circle id="ringVM" class="text-amber-500 transition-all duration-500" stroke-width="8" stroke-dasharray="238" stroke-dashoffset="100" stroke-linecap="round" stroke="currentColor" fill="transparent" r="38" cx="50" cy="50" />
+                                </svg>
+                                <span id="textRingVM" class="text-xs font-extrabold text-slate-200">13.3%</span>
+                            </div>
+                            <span class="text-[11px] font-bold text-slate-300">Volatile Matter (VM)</span>
+                            <p class="text-[10px] text-slate-400 leading-normal px-2">Low values indicate minimized nitrogen locking hazards.</p>
+                        </div>
+
+                        <!-- Progress Circle: Ash Content -->
+                        <div class="flex flex-col items-center text-center gap-2">
+                            <div class="relative w-20 h-20 flex items-center justify-center">
+                                <svg class="absolute transform -rotate-90 w-full h-full" viewBox="0 0 100 100">
+                                    <circle class="text-slate-800" stroke-width="8" stroke="currentColor" fill="transparent" r="38" cx="50" cy="50" />
+                                    <circle id="ringAsh" class="text-sky-500 transition-all duration-500" stroke-width="8" stroke-dasharray="238" stroke-dashoffset="100" stroke-linecap="round" stroke="currentColor" fill="transparent" r="38" cx="50" cy="50" />
+                                </svg>
+                                <span id="textRingAsh" class="text-xs font-extrabold text-slate-200">26.4%</span>
+                            </div>
+                            <span class="text-[11px] font-bold text-slate-300">Ash Fraction</span>
+                            <p class="text-[10px] text-slate-400 leading-normal px-2">Mineral fractions containing active exchangeable nutrients.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Co-processed Agroforestry Baseline Matrix -->
+                <div class="border border-slate-800/80 rounded-xl overflow-hidden text-xs">
+                    <div class="bg-slate-950 p-3 font-bold text-slate-300 border-b border-slate-800 flex justify-between items-center">
+                        <span>Co-Processed Agroforestry Reference Base (CRIDA Reactor Networks)</span>
+                        <span class="text-[10px] font-normal text-slate-500">Table 6 baseline</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-900 text-slate-400 uppercase text-[9px] tracking-wider border-b border-slate-800">
+                                <tr>
+                                    <th class="p-2.5">Agroforestry Source</th>
+                                    <th class="p-2.5">Optimal Load</th>
+                                    <th class="p-2.5">Yield (%)</th>
+                                    <th class="p-2.5">Total Carbon</th>
+                                    <th class="p-2.5">Water Capacity</th>
+                                    <th class="p-2.5">Solid N Recovery</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 text-[11px] text-slate-300">
+                                <tr class="hover:bg-slate-950/40">
+                                    <td class="p-2.5 font-semibold">Pongamia Pod/Shell</td>
+                                    <td class="p-2.5">40.0 kg</td>
+                                    <td class="p-2.5 text-slate-200">28.0%</td>
+                                    <td class="p-2.5">620.0 g/kg</td>
+                                    <td class="p-2.5 text-slate-400">230.0%</td>
+                                    <td class="p-2.5 text-emerald-400">24.9%</td>
+                                </tr>
+                                <tr class="hover:bg-slate-950/40">
+                                    <td class="p-2.5 font-semibold">Gliricidia Twig</td>
+                                    <td class="p-2.5">39.0 kg</td>
+                                    <td class="p-2.5 text-slate-200">32.0%</td>
+                                    <td class="p-2.5">430.0 g/kg</td>
+                                    <td class="p-2.5 text-slate-400">280.0%</td>
+                                    <td class="p-2.5 text-emerald-400">38.1%</td>
+                                </tr>
+                                <tr class="hover:bg-slate-950/40 text-emerald-400 bg-emerald-500/5">
+                                    <td class="p-2.5 font-extrabold">Stalks (Castor/Cotton)</td>
+                                    <td class="p-2.5 font-semibold">14.0-27.0 kg</td>
+                                    <td class="p-2.5 font-bold">17.1 - 24.4%</td>
+                                    <td class="p-2.5 font-bold">494 - 719 g/kg</td>
+                                    <td class="p-2.5 font-bold">270 - 390%</td>
+                                    <td class="p-2.5 font-bold">23.0 - 48.5%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT 2: Hydrology and Bulk Density -->
+            <div id="tabContent-hydrology" class="bg-slate-900 rounded-2xl border border-slate-800 p-5 lg:p-6 shadow-2xl flex flex-col gap-6 hidden">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+                        Hydrological Soil Engineering Matrix
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">Simulate application impacts on bulk density, pore-space volume, and capillary water capacity.</p>
+                </div>
+
+                <!-- Interactive Soil Hydration Sandbox -->
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col gap-4">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="font-extrabold text-slate-300 uppercase flex items-center gap-1.5">
+                            <i class="fa-solid fa-cloud-showers-heavy text-cyan-400"></i> Hydration Level Simulator
+                        </span>
+                        <span id="hydrationVal" class="text-cyan-400 font-extrabold">Medium-Clay Blend</span>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <button onclick="setHydration('uncom')" class="p-3 bg-slate-900 border border-slate-800 rounded-lg text-left text-xs transition-all hover:border-cyan-400/35">
+                            <span class="font-bold text-slate-200 block">Unamended Soil (Control)</span>
+                            <span class="text-[10px] text-slate-400 block mt-1">Density: 1.45 Mg/m³ • High runoff risk</span>
+                        </button>
+                        <button onclick="setHydration('amend')" class="p-3 bg-cyan-500/5 border border-cyan-500/20 rounded-lg text-left text-xs transition-all hover:bg-cyan-500/10">
+                            <span class="font-bold text-cyan-400 block">Biochar Amended (3-6 t/ha)</span>
+                            <span class="text-[10px] text-slate-400 block mt-1">Density: 0.32-0.44 Mg/m³ • Elevated Porosity</span>
+                        </button>
+                    </div>
+
+                    <!-- Hydrology Output Stats -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs pt-1">
+                        <div class="p-3 rounded-lg bg-slate-900 border border-slate-800/80">
+                            <span class="text-slate-400 text-[10px] block mb-1">Total Porosity Matrix</span>
+                            <span id="hydroPorosity" class="text-emerald-400 text-lg font-extrabold">103.3%</span>
+                            <span class="text-[10px] text-slate-500 block mt-0.5">Hydraulic pore space</span>
+                        </div>
+                        <div class="p-3 rounded-lg bg-slate-900 border border-slate-800/80">
+                            <span class="text-slate-400 text-[10px] block mb-1">Water Holding Capacity</span>
+                            <span id="hydroWHC" class="text-cyan-400 text-lg font-extrabold">270.0%</span>
+                            <span class="text-[10px] text-slate-500 block mt-0.5">Capillary retention limit</span>
+                        </div>
+                        <div class="p-3 rounded-lg bg-slate-900 border border-slate-800/80">
+                            <span class="text-slate-400 text-[10px] block mb-1">Available Water Content</span>
+                            <span id="hydroAWC" class="text-sky-400 text-lg font-extrabold">0.80 g/g</span>
+                            <span class="text-[10px] text-slate-500 block mt-0.5">Water available to crops</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bar chart visualizing capillary retention vs. gravitational loss -->
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col gap-4">
+                    <span class="text-xs font-bold text-slate-300 uppercase">Capillary Hydraulic Capacity (g H₂O / g biochar)</span>
+                    <div class="flex flex-col gap-3">
+                        <div>
+                            <div class="flex justify-between text-[11px] mb-1">
+                                <span class="text-slate-400 font-semibold">Field Capacity (Water Retained at Rest)</span>
+                                <span id="barFieldCapVal" class="text-emerald-400 font-extrabold">1.60 g/g</span>
+                            </div>
+                            <div class="w-full bg-slate-900 rounded-full h-3.5 border border-slate-800 overflow-hidden">
+                                <div id="barFieldCap" class="bg-gradient-to-r from-emerald-600 to-emerald-400 h-full transition-all duration-500" style="width: 50%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between text-[11px] mb-1">
+                                <span class="text-slate-400 font-semibold">Permanent Wilting Endpoint (Water Trapped / Inaccessible)</span>
+                                <span id="barWiltVal" class="text-amber-500 font-extrabold">0.80 g/g</span>
+                            </div>
+                            <div class="w-full bg-slate-900 rounded-full h-3.5 border border-slate-800 overflow-hidden">
+                                <div id="barWilt" class="bg-gradient-to-r from-amber-600 to-amber-400 h-full transition-all duration-500" style="width: 25%"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-400 leading-relaxed italic mt-1">
+                        *Note: High-temperature slow pyrolysis generates robust micropore channels via deep dehydroxylation. This maximizes the Available Water Content (AWC), allowing crops to resist severe monsoonal dry phases.
+                    </p>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT 3: Process Economics & Long-Term Yields -->
+            <div id="tabContent-economics" class="bg-slate-900 rounded-2xl border border-slate-800 p-5 lg:p-6 shadow-2xl flex flex-col gap-6 hidden">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+                        Agronomic Yield Gains & Cost Efficiency
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">Analyze longitudinal crop responses of Pigeonpea (Cajanus cajan) alongside economic kiln parameters.</p>
+                </div>
+
+                <!-- High-Resolution Yield Over Years Graphic -->
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col gap-4">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-2">
+                        <span class="text-xs font-bold text-slate-300 uppercase">Longitudinal Seed Yield Performance (kg/ha)</span>
+                        <span class="text-[10px] text-emerald-400 font-semibold"><i class="fa-solid fa-arrow-up-right-dots"></i> Compounding Benefit</span>
+                    </div>
+
+                    <!-- Year bars container -->
+                    <div class="flex flex-col gap-3 pt-2">
+                        <!-- Year 1: Control -->
+                        <div class="grid grid-cols-12 items-center gap-2">
+                            <span class="col-span-3 text-[11px] text-slate-400">2010 Control</span>
+                            <div class="col-span-7 bg-slate-900 h-6 border border-slate-800 rounded overflow-hidden">
+                                <div class="bg-slate-600 h-full flex items-center px-2 text-[10px] font-bold text-slate-100" style="width: 20%">454 kg/ha</div>
+                            </div>
+                            <span class="col-span-2 text-[10px] text-slate-500 text-right">Baseline</span>
+                        </div>
+
+                        <!-- Year 2010 alternate -->
+                        <div class="grid grid-cols-12 items-center gap-2">
+                            <span class="col-span-3 text-[11px] text-slate-300">2010 (6 t/ha + RDF)</span>
+                            <div class="col-span-7 bg-slate-900 h-6 border border-slate-800 rounded overflow-hidden">
+                                <div class="bg-emerald-500/80 h-full flex items-center px-2 text-[10px] font-extrabold text-slate-950" style="width: 27%">635.6 kg/ha</div>
+                            </div>
+                            <span class="col-span-2 text-[10px] text-emerald-400 text-right font-semibold">+40%</span>
+                        </div>
+
+                        <!-- Year 2011 alternate -->
+                        <div class="grid grid-cols-12 items-center gap-2">
+                            <span class="col-span-3 text-[11px] text-slate-300">2011 (Residual Year)</span>
+                            <div class="col-span-7 bg-slate-900 h-6 border border-slate-800 rounded overflow-hidden">
+                                <div class="bg-emerald-500/85 h-full flex items-center px-2 text-[10px] font-extrabold text-slate-950" style="width: 41%">940.0 kg/ha</div>
+                            </div>
+                            <span class="col-span-2 text-[10px] text-emerald-400 text-right font-semibold">+107%</span>
+                        </div>
+
+                        <!-- Year 2012 alternate -->
+                        <div class="grid grid-cols-12 items-center gap-2">
+                            <span class="col-span-3 text-[11px] text-slate-300">2012 (Pigeonpea Biochar)</span>
+                            <div class="col-span-7 bg-slate-900 h-6 border border-slate-800 rounded overflow-hidden">
+                                <div class="bg-emerald-500/90 h-full flex items-center px-2 text-[10px] font-extrabold text-slate-950" style="width: 59%">1,362.0 kg/ha</div>
+                            </div>
+                            <span class="col-span-2 text-[10px] text-emerald-400 text-right font-semibold">+200%</span>
+                        </div>
+
+                        <!-- Year 2013 alternate peak -->
+                        <div class="grid grid-cols-12 items-center gap-2">
+                            <span class="col-span-3 text-[11px] text-emerald-400 font-bold">2013 Peak Trial</span>
+                            <div class="col-span-7 bg-slate-900 h-6 border border-slate-800 rounded overflow-hidden">
+                                <div class="bg-gradient-to-r from-emerald-500 to-teal-400 h-full flex items-center px-2 text-[10px] font-black text-slate-950" style="width: 100%">2,310.4 kg/ha</div>
+                            </div>
+                            <span class="col-span-2 text-[10px] text-emerald-400 text-right font-black">+409%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Production Economics Breakdown -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Cost framework -->
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs flex flex-col gap-3">
+                        <span class="text-xs font-bold text-slate-400 border-b border-slate-800 pb-1.5 uppercase block">CRIDA Kiln Unit Costing</span>
+                        <div class="flex flex-col gap-2.5">
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-400">Fixed Drum Shell Investment:</span>
+                                <span class="font-bold text-slate-200">500.00 INR</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-400">Base Vents Fabrication:</span>
+                                <span class="font-bold text-slate-200">400.00 INR</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-400">Annual Operations Support:</span>
+                                <span class="font-bold text-slate-200">100.00 INR/yr</span>
+                            </div>
+                            <div class="flex justify-between items-center border-t border-slate-800 pt-2 font-bold text-emerald-400">
+                                <span>Total Capital Cost:</span>
+                                <span>1,200.00 INR</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Market Comparison -->
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs flex flex-col justify-between gap-3">
+                        <div>
+                            <span class="text-xs font-bold text-slate-400 border-b border-slate-800 pb-1.5 uppercase block">Decentralized Production Cost</span>
+                            <div class="flex flex-col gap-2 mt-2">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-slate-400">Castor Biochar Cost:</span>
+                                    <span class="font-bold text-slate-200">14.00 INR / kg</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-slate-400">Cotton Biochar Cost:</span>
+                                    <span class="font-bold text-slate-200">13.00 INR / kg</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Saving margin highlights -->
+                        <div class="bg-emerald-500/10 border border-emerald-500/20 p-2.5 rounded-lg">
+                            <span class="text-[10px] text-emerald-400 block font-bold uppercase tracking-wider">SAVINGS vs IMPORT VALUE</span>
+                            <p class="text-[11px] text-slate-300 mt-1">Local CRIDA kiln fabrication reduces production overhead by <b>&gt;90%</b> compared to global retail markets.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT 4: Safety & Field Deployment Protocols -->
+            <div id="tabContent-deployment" class="bg-slate-900 rounded-2xl border border-slate-800 p-5 lg:p-6 shadow-2xl flex flex-col gap-6 hidden">
+                <div>
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+                        Quality Standards & Safe Application Strategy
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">International Biochar Initiative (IBI) compliance checkpoints and safe deployment procedures.</p>
+                </div>
+
+                <!-- IBI Compliance Checkpoint Checklist -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs flex flex-col gap-3">
+                        <span class="text-xs font-bold text-slate-400 border-b border-slate-800 pb-1.5 uppercase block flex justify-between">
+                            <span>IBI Quality Checklist</span>
+                            <span class="text-[9px] text-emerald-400 border border-emerald-400/20 px-1.5 rounded">PASSED</span>
+                        </span>
+                        
+                        <div class="flex flex-col gap-3">
+                            <div class="flex gap-2 items-start">
+                                <i class="fa-solid fa-circle-check text-emerald-400 mt-0.5"></i>
+                                <div>
+                                    <span class="font-bold text-slate-200 block">Class 1 Status (&gt;60% TOC)</span>
+                                    <span class="text-[10px] text-slate-400">Total organic carbon content values consistently exceed limits.</span>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-2 items-start">
+                                <i class="fa-solid fa-circle-check text-emerald-400 mt-0.5"></i>
+                                <div>
+                                    <span class="font-bold text-slate-200 block">Aromatic Stability Ratio (H:C &lt; 0.7)</span>
+                                    <span class="text-[10px] text-slate-400">Ensures long-term microbial mineralization resistance.</span>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-2 items-start">
+                                <i class="fa-solid fa-circle-check text-emerald-400 mt-0.5"></i>
+                                <div>
+                                    <span class="font-bold text-slate-200 block">Contaminant Safety Bounds</span>
+                                    <span class="text-[10px] text-slate-400">16 Priority US EPA Polycyclic Aromatic Hydrocarbons remain well below critical limits.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs flex flex-col gap-3">
+                        <span class="text-xs font-bold text-slate-400 border-b border-slate-800 pb-1.5 uppercase block">Avoidance of Bio-Hazards</span>
+                        
+                        <div class="flex flex-col gap-3">
+                            <div class="flex gap-2 items-start">
+                                <span class="bg-amber-500/10 text-amber-400 w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0">1</span>
+                                <div>
+                                    <span class="font-bold text-slate-200 block">Avoid Alkaline Shock</span>
+                                    <span class="text-[10px] text-slate-400">Limit cotton-stalk applications to 6 t/ha per batch due to elevated matrix carbonates.</span>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-2 items-start">
+                                <span class="bg-amber-500/10 text-amber-400 w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0">2</span>
+                                <div>
+                                    <span class="font-bold text-slate-200 block">Prevent Nitrogen Lock</span>
+                                    <span class="text-[10px] text-slate-400">Avoid under-pyrolyzed high VM chars which trigger localized plant nitrogen starvation.</span>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-2 items-start">
+                                <span class="bg-amber-500/10 text-amber-400 w-5 h-5 rounded-full flex items-center justify-center font-bold text-[10px] flex-shrink-0">3</span>
+                                <div>
+                                    <span class="font-bold text-slate-200 block">Eliminate Wind Drift</span>
+                                    <span class="text-[10px] text-slate-400">Never broadcast dry fine powders; execute mandatory co-mixing protocols.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4-Step Standardized Field Deployment Sequence -->
+                <div class="bg-slate-950 p-5 rounded-xl border border-slate-800 flex flex-col gap-4">
+                    <span class="text-xs font-bold text-slate-300 uppercase">Standard Operating Procedure for Safe Soil Integration</span>
+                    <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center">
+                        <div class="p-3 bg-slate-900 rounded-lg border border-slate-800 flex flex-col items-center gap-1.5">
+                            <div class="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                                01
+                            </div>
+                            <span class="font-bold text-slate-200 text-xs">Co-Mixing</span>
+                            <p class="text-[10px] text-slate-400 leading-normal">Blend biochar with moist native topsoil or FYM (1:1 ratio) to increase weight.</p>
+                        </div>
+
+                        <div class="p-3 bg-slate-900 rounded-lg border border-slate-800 flex flex-col items-center gap-1.5">
+                            <div class="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                                02
+                            </div>
+                            <span class="font-bold text-slate-200 text-xs">Broadcasting</span>
+                            <p class="text-[10px] text-slate-400 leading-normal">Distribute uniformly across fields directly after primary tillage cycles.</p>
+                        </div>
+
+                        <div class="p-3 bg-slate-900 rounded-lg border border-slate-800 flex flex-col items-center gap-1.5">
+                            <div class="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                                03
+                            </div>
+                            <span class="font-bold text-slate-200 text-xs">Incorporation</span>
+                            <p class="text-[10px] text-slate-400 leading-normal">Incorporate deep into the active root zone (10-15 cm) using rotary tools.</p>
+                        </div>
+
+                        <div class="p-3 bg-slate-900 rounded-lg border border-slate-800 flex flex-col items-center gap-1.5">
+                            <div class="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                                04
+                            </div>
+                            <span class="font-bold text-slate-200 text-xs">RDF Pairing</span>
+                            <p class="text-[10px] text-slate-400 leading-normal">Apply recommended inorganic fertilizers to bypass early nutrient locking.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Info / Credits footer -->
+    <footer class="mt-auto border-t border-slate-800 bg-slate-950 p-4 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-2">
+            <span>© 2026 RV College of Engineering, ACY 2025-26. Department of Civil Engineering. All Rights Reserved.</span>
+            <span class="text-slate-400">Standardized under CRIDA Kiln Guidelines</span>
+        </div>
+    </footer>
+
+    <!-- Interactive 3D Kiln info Modal (Toggled by info icon) -->
+    <div id="kilnInfoModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl max-w-md w-full flex flex-col gap-4 shadow-2xl relative">
+            <button onclick="toggleKilnInfoModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h4 class="text-base font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-circle-info text-emerald-400"></i>
+                CRIDA Kiln Engineering Specs
+            </h4>
+            <div class="text-xs text-slate-300 leading-relaxed flex flex-col gap-2.5">
+                <p>The <b>Central Research Institute for Dryland Agriculture (ICAR-CRIDA)</b> portable carbonization kiln features several unique thermodynamic attributes:</p>
+                <ul class="list-disc list-inside space-y-1.5 pl-1">
+                    <li><b>Reactor Volume:</b> 0.21 m³ (212 Liters) constructed from robust single-barrel carbon steel.</li>
+                    <li><b>Draft Control Vents:</b> 40 precision-cut openings (4cm diameter) staggered in 3 concentric circles to ensure uniform vertical updrafts.</li>
+                    <li><b>Internal Chimney Core:</b> Creates a continuous internal chimney channel using a temporary center pole, preventing core stagnation.</li>
+                    <li><b>Anoxic Pyrolysis:</b> Strictly limits internal oxygen feed, preserving at least 50% of raw carbon skeletons from escaping into the atmosphere.</li>
+                </ul>
+            </div>
+            <button onclick="toggleKilnInfoModal()" class="mt-2 w-full py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-bold hover:bg-emerald-400 transition-all text-xs">
+                Close Specifications
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN SIMULATION AND GRAPHIC INTERACTIVE CONTROLLER SCRIPTS -->
+    <script>
+        // ----------------- GLOBAL DATA DICTIONARY -----------------
+        const feedstockDatabase = {
+            castor: {
+                name: "Castor Stalks",
+                chemical: {
+                    carbon: { low: "494.8 g/kg", high: "613.1 g/kg" },
+                    nitrogen: { low: "9.5 g/kg", high: "14.2 g/kg" },
+                    phosphorus: { low: "3.5 g/kg", high: "4.0 g/kg" },
+                    potassium: { low: "4.0 g/kg", high: "5.4 g/kg" }
+                },
+                interaction: {
+                    ph: { low: "7.9", high: "7.7" },
+                    ec: { low: "0.02 dS/m", high: "0.05 dS/m" },
+                    cec: { low: "27.0 cmol/kg", high: "16.4 cmol/kg" }
+                },
+                proximate: {
+                    fc: { low: 42.2, high: 61.5 },
+                    vm: { low: 17.8, high: 8.6 },
+                    ash: { low: 39.9, high: 29.9 },
+                    yield: { low: 20.4, high: 17.2 }
+                },
+                hydrology: {
+                    porosity: { low: "103.3%", high: "110.2%" },
+                    whc: { low: "270.0%", high: "340.0%" },
+                    awc: { low: "0.80 g/g", high: "2.40 g/g" },
+                    fc_water: { low: "1.60 g/g", high: "2.80 g/g" },
+                    pwp_water: { low: "0.80 g/g", high: "0.40 g/g" }
+                }
+            },
+            cotton: {
+                name: "Cotton Stalks",
+                chemical: {
+                    carbon: { low: "592.4 g/kg", high: "719.3 g/kg" },
+                    nitrogen: { low: "10.3 g/kg", high: "17.4 g/kg" },
+                    phosphorus: { low: "4.6 g/kg", high: "4.0 g/kg" },
+                    potassium: { low: "4.1 g/kg", high: "12.2 g/kg" }
+                },
+                interaction: {
+                    ph: { low: "9.2", high: "9.0" },
+                    ec: { low: "0.05 dS/m", high: "0.11 dS/m" },
+                    cec: { low: "46.3 cmol/kg", high: "22.7 cmol/kg" }
+                },
+                proximate: {
+                    fc: { low: 58.7, high: 71.0 },
+                    vm: { low: 12.2, high: 7.9 },
+                    ash: { low: 29.1, high: 21.2 },
+                    yield: { low: 20.4, high: 20.3 }
+                },
+                hydrology: {
+                    porosity: { low: "98.9%", high: "104.1%" },
+                    whc: { low: "310.0%", high: "390.0%" },
+                    awc: { low: "0.40 g/g", high: "0.89 g/g" },
+                    fc_water: { low: "1.30 g/g", high: "1.70 g/g" },
+                    pwp_water: { low: "0.90 g/g", high: "0.81 g/g" }
+                }
+            }
+        };
+
+        // State variables
+        let selectedFeedstock = 'castor';
+        let currentTemp = 375;
+
+        // Interactive Tab Switching
+        function switchTab(tabId) {
+            const tabs = ['characterization', 'hydrology', 'economics', 'deployment'];
+            tabs.forEach(tab => {
+                const btn = document.getElementById(`tabBtn-${tab}`);
+                const content = document.getElementById(`tabContent-${tab}`);
+                if (tab === tabId) {
+                    btn.className = "flex-1 py-3 px-2 rounded-xl text-xs font-bold transition-all text-emerald-400 bg-slate-950 border border-emerald-500/20 flex items-center justify-center gap-2";
+                    content.classList.remove('hidden');
+                } else {
+                    btn.className = "flex-1 py-3 px-2 rounded-xl text-xs font-bold transition-all text-slate-400 hover:text-slate-200 hover:bg-slate-950/50 flex items-center justify-center gap-2";
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        // Toggle Information modal
+        function toggleKilnInfoModal() {
+            const modal = document.getElementById('kilnInfoModal');
+            modal.classList.toggle('hidden');
+        }
+
+        // Feedstock button selection triggers
+        function selectFeedstock(feedstock) {
+            selectedFeedstock = feedstock;
+            const btnCastor = document.getElementById('feedstockCastor');
+            const btnCotton = document.getElementById('feedstockCotton');
+            
+            if (feedstock === 'castor') {
+                btnCastor.className = "p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 text-left transition-all hover:bg-emerald-500/10 flex flex-col gap-1 focus:outline-none";
+                btnCastor.innerHTML = `
+                    <span class="text-xs font-bold text-emerald-400 flex items-center justify-between w-full">
+                        CASTOR STALKS <i class="fa-solid fa-circle-check text-xs"></i>
+                    </span>
+                    <span class="text-[10px] text-slate-400 italic">Ricinus communis</span>
+                    <span class="text-[10px] mt-1 bg-slate-950 px-1.5 py-0.5 rounded text-slate-300 w-max">C:N 36.7 • Low Ash</span>
+                `;
+                btnCotton.className = "p-3 rounded-xl border border-slate-800 bg-slate-950 text-left transition-all hover:bg-slate-900 flex flex-col gap-1 focus:outline-none";
+                btnCotton.innerHTML = `
+                    <span class="text-xs font-bold text-slate-300 flex items-center justify-between w-full">
+                        COTTON STALKS <i class="fa-regular fa-circle text-xs text-slate-600"></i>
+                    </span>
+                    <span class="text-[10px] text-slate-400 italic">Gossypium hirsutum</span>
+                    <span class="text-[10px] mt-1 bg-slate-950 px-1.5 py-0.5 rounded text-slate-300 w-max">C:N 56.2 • Alkaline Ash</span>
+                `;
+            } else {
+                btnCotton.className = "p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 text-left transition-all hover:bg-emerald-500/10 flex flex-col gap-1 focus:outline-none";
+                btnCotton.innerHTML = `
+                    <span class="text-xs font-bold text-emerald-400 flex items-center justify-between w-full">
+                        COTTON STALKS <i class="fa-solid fa-circle-check text-xs"></i>
+                    </span>
+                    <span class="text-[10px] text-slate-400 italic">Gossypium hirsutum</span>
+                    <span class="text-[10px] mt-1 bg-slate-950 px-1.5 py-0.5 rounded text-slate-300 w-max">C:N 56.2 • Alkaline Ash</span>
+                `;
+                btnCastor.className = "p-3 rounded-xl border border-slate-800 bg-slate-950 text-left transition-all hover:bg-slate-900 flex flex-col gap-1 focus:outline-none";
+                btnCastor.innerHTML = `
+                    <span class="text-xs font-bold text-slate-300 flex items-center justify-between w-full">
+                        CASTOR STALKS <i class="fa-regular fa-circle text-xs text-slate-600"></i>
+                    </span>
+                    <span class="text-[10px] text-slate-400 italic">Ricinus communis</span>
+                    <span class="text-[10px] mt-1 bg-slate-950 px-1.5 py-0.5 rounded text-slate-300 w-max">C:N 36.7 • Low Ash</span>
+                `;
+            }
+            updateMetrics();
+        }
+
+        // Set slider manually from custom helper buttons
+        function setTemp(temp) {
+            const slider = document.getElementById('tempSlider');
+            slider.value = temp;
+            currentTemp = temp;
+            updateMetrics();
+        }
+
+        // ----------------- SYNC RECT DATA AND SLIDERS -----------------
+        const tempSlider = document.getElementById('tempSlider');
+        tempSlider.addEventListener('input', (e) => {
+            currentTemp = parseInt(e.target.value);
+            updateMetrics();
+        });
+
+        function updateMetrics() {
+            const data = feedstockDatabase[selectedFeedstock];
+            const isHighTemp = currentTemp >= 425;
+            const tempStr = isHighTemp ? 'high' : 'low';
+
+            // 1. Telemetry / HUD Elements
+            document.getElementById('tempValueLabel').innerText = `${currentTemp}°C`;
+            document.getElementById('hudTemp').innerText = `${currentTemp}°C`;
+
+            // Adjust smoke description in HUD
+            const hudSmokeText = document.getElementById('hudSmokeText');
+            const hudSmokeDot = document.getElementById('hudSmokeColorIndicator');
+            if (currentTemp < 400) {
+                hudSmokeText.innerText = 'Grey/White';
+                hudSmokeDot.className = 'w-2.5 h-2.5 rounded-full bg-slate-300 animate-pulse';
+                document.getElementById('hudPhase').innerText = 'Devolatilization';
+                document.getElementById('phaseDetails').innerText = "Stage I / II Transitions: System is driving off loose water molecules and short volatile organic compounds. Lower lignins remain chemically stable, ensuring maximum initial Nitrogen recovery.";
+            } else if (currentTemp >= 400 && currentTemp < 450) {
+                hudSmokeText.innerText = 'Semi-Translucent';
+                hudSmokeDot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500/40 animate-pulse';
+                document.getElementById('hudPhase').innerText = 'Carbonization Core';
+                document.getElementById('phaseDetails').innerText = "Stage II / III Transitions: Rapid cellulose degradation dominates. Aromatic rings begin clustering, resulting in a denser solid carbon framework with highly active surface oxygen groups.";
+            } else {
+                hudSmokeText.innerText = 'Thin Blue';
+                hudSmokeDot.className = 'w-2.5 h-2.5 rounded-full bg-sky-400 animate-pulse';
+                document.getElementById('hudPhase').innerText = 'Aromatic Maturation';
+                document.getElementById('phaseDetails').innerText = "Stage III Final Core maturation: Extensive dehydration and aromatic polycondensation yield maximum fixed carbon matrices. Volatile content drops to zero-risk baselines.";
+            }
+
+            // 2. Dynamic Metric Yield values
+            const solidYieldVal = data.proximate.yield[tempStr];
+            document.getElementById('metricYield').innerText = `${solidYieldVal}%`;
+            document.getElementById('metricFC').innerText = `${data.proximate.fc[tempStr]}%`;
+
+            // 3. Physicochemical Property Values
+            document.getElementById('charCarbon').innerText = data.chemical.carbon[tempStr];
+            document.getElementById('charNitrogen').innerText = data.chemical.nitrogen[tempStr];
+            document.getElementById('charPhosphorus').innerText = data.chemical.phosphorus[tempStr];
+            document.getElementById('charPotassium').innerText = data.chemical.potassium[tempStr];
+
+            document.getElementById('charPH').innerText = data.interaction.ph[tempStr];
+            document.getElementById('charEC').innerText = data.interaction.ec[tempStr];
+            document.getElementById('charCEC').innerText = data.interaction.cec[tempStr];
+
+            // 4. Progress Rings for proximate analysis
+            updateRing('ringFC', 'textRingFC', data.proximate.fc[tempStr]);
+            updateRing('ringVM', 'textRingVM', data.proximate.vm[tempStr]);
+            updateRing('ringAsh', 'textRingAsh', data.proximate.ash[tempStr]);
+
+            // 5. Hydrology Matrix updates
+            document.getElementById('hydroPorosity').innerText = data.hydrology.porosity[tempStr];
+            document.getElementById('hydroWHC').innerText = data.hydrology.whc[tempStr];
+            document.getElementById('hydroAWC').innerText = data.hydrology.awc[tempStr];
+
+            // Capitalize bar heights based on values
+            const fieldCap = parseFloat(data.hydrology.fc_water[tempStr]);
+            const wiltP = parseFloat(data.hydrology.pwp_water[tempStr]);
+            const fcPercent = Math.min((fieldCap / 3.0) * 100, 100);
+            const wiltPercent = Math.min((wiltP / 3.0) * 100, 100);
+
+            document.getElementById('barFieldCapVal').innerText = `${fieldCap.toFixed(2)} g/g`;
+            document.getElementById('barFieldCap').style.width = `${fcPercent}%`;
+            document.getElementById('barWiltVal').innerText = `${wiltP.toFixed(2)} g/g`;
+            document.getElementById('barWilt').style.width = `${wiltPercent}%`;
+
+            // Update 3D Thermals
+            updateThreeColors(currentTemp);
+        }
+
+        function updateRing(ringId, textId, value) {
+            const circle = document.getElementById(ringId);
+            const text = document.getElementById(textId);
+            // Ring circumference is 2 * PI * r = 2 * 3.14159 * 38 = ~238.76
+            const circumference = 238.76;
+            const offset = circumference - (value / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+            text.innerText = `${value}%`;
+        }
+
+        // Hydration levels visual slider toggle
+        function setHydration(type) {
+            const lab = document.getElementById('hydrationVal');
+            const por = document.getElementById('hydroPorosity');
+            const whc = document.getElementById('hydroWHC');
+            const awc = document.getElementById('hydroAWC');
+
+            if (type === 'uncom') {
+                lab.innerText = "Unamended Soil Control";
+                por.innerText = "46.2% Vol";
+                whc.innerText = "35.0% MWHC";
+                awc.innerText = "0.15 g/g";
+            } else {
+                lab.innerText = "Amended Clay-Silt Complex";
+                updateMetrics(); // Restores metrics based on active biochar
+            }
+        }
+
+
+        // ----------------- THREE.JS 3D ENGINE -----------------
+        let scene, camera, renderer;
+        let kilnMesh, coreBiomass, basePlate;
+        let smokeSystem, smokeMaterial;
+        let isOrbiting = true;
+        let autoRotateActive = true;
+
+        const container = document.getElementById('canvasContainer');
+
+        function init3D() {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            // Create Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x05070c);
+            scene.fog = new THREE.FogExp2(0x05070c, 0.08);
+
+            // Create Camera
+            camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 1000);
+            camera.position.set(5, 6, 8);
+            camera.lookAt(0, 1.5, 0);
+
+            // WebGL Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(width, height);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            
+            // Clear prior canvas loader
+            document.getElementById('canvasLoader').remove();
+            container.appendChild(renderer.domElement);
+
+            // Ambient/Direct Lights
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.45);
+            scene.add(ambientLight);
+
+            const directLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            directLight.position.set(10, 20, 15);
+            directLight.castShadow = true;
+            scene.add(directLight);
+
+            const furnaceGlowLight = new THREE.PointLight(0xffa500, 2, 8);
+            furnaceGlowLight.position.set(0, 1.5, 0);
+            scene.add(furnaceGlowLight);
+
+            // BUILD THE CRIDA KILN REACTOR MODEL
+            const kilnGroup = new THREE.Group();
+
+            // Ground base soil plane
+            const floorGeo = new THREE.CylinderGeometry(3.5, 3.5, 0.2, 32);
+            const floorMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.95 });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.position.y = -0.1;
+            scene.add(floor);
+
+            // Stalk Pile adjacent to base
+            const stalkGroup = new THREE.Group();
+            for (let i = 0; i < 15; i++) {
+                const stalkGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.2, 8);
+                const stalkMat = new THREE.MeshStandardMaterial({ color: 0x854d0e, roughness: 0.9 });
+                const stalk = new THREE.Mesh(stalkGeo, stalkMat);
+                stalk.rotation.x = Math.PI / 2 + (Math.random() - 0.5) * 0.2;
+                stalk.rotation.z = (Math.random() - 0.5) * 3;
+                stalk.position.set(-1.8 + (Math.random() - 0.5) * 0.4, 0.05, 1.2 + (Math.random() - 0.5) * 0.4);
+                stalkGroup.add(stalk);
+            }
+            scene.add(stalkGroup);
+
+            // Kiln Body Cylinder (0.21 m3 drum)
+            const kilnGeo = new THREE.CylinderGeometry(1.0, 1.0, 2.5, 32, 1, true); // Opened Top/Bottom
+            const metalMat = new THREE.MeshStandardMaterial({
+                color: 0x475569,
+                metalness: 0.8,
+                roughness: 0.35,
+                side: THREE.DoubleSide
+            });
+            kilnMesh = new THREE.Mesh(kilnGeo, metalMat);
+            kilnMesh.position.y = 1.35;
+            kilnGroup.add(kilnMesh);
+
+            // Kiln Lid
+            const lidGeo = new THREE.CylinderGeometry(1.05, 1.05, 0.15, 32);
+            const lid = new THREE.Mesh(lidGeo, metalMat);
+            lid.position.y = 2.65;
+            kilnGroup.add(lid);
+
+            // Chimney pipe (Top loading core exhaust vent)
+            const chimGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.8, 16);
+            const chim = new THREE.Mesh(chimGeo, metalMat);
+            chim.position.set(0, 3.1, 0);
+            kilnGroup.add(chim);
+
+            // Staggered base vents (40 vents mapped dynamically on lower section)
+            const ventGeo = new THREE.CylinderGeometry(0.06, 0.06, 0.04, 8);
+            const ventMat = new THREE.MeshBasicMaterial({ color: 0x090d16 });
+            for (let r = 0; r < 3; r++) { // Three rings
+                const numVents = 8 + r * 4;
+                const radius = 0.98;
+                const heightY = 0.3 + r * 0.25;
+                for (let i = 0; i < numVents; i++) {
+                    const angle = (i / numVents) * Math.PI * 2;
+                    const vent = new THREE.Mesh(ventGeo, ventMat);
+                    vent.position.set(Math.cos(angle) * radius, heightY, Math.sin(angle) * radius);
+                    vent.rotation.z = Math.PI / 2;
+                    vent.rotation.y = -angle;
+                    kilnGroup.add(vent);
+                }
+            }
+
+            // Internal Biomass (Represented inside as glowing wireframe mesh)
+            const biomassGeo = new THREE.CylinderGeometry(0.85, 0.85, 1.8, 16, 8);
+            const biomassMat = new THREE.MeshBasicMaterial({
+                color: 0xff4500,
+                wireframe: true,
+                transparent: true,
+                opacity: 0.35
+            });
+            coreBiomass = new THREE.Mesh(biomassGeo, biomassMat);
+            coreBiomass.position.y = 1.3;
+            kilnGroup.add(coreBiomass);
+
+            scene.add(kilnGroup);
+
+            // SMOKE PARTICLE SYSTEM
+            const smokeParticlesCount = 80;
+            const smokeGeometry = new THREE.BufferGeometry();
+            const positions = new Float32Array(smokeParticlesCount * 3);
+            const ages = new Float32Array(smokeParticlesCount);
+            const sizes = new Float32Array(smokeParticlesCount);
+
+            for (let i = 0; i < smokeParticlesCount; i++) {
+                // Initialize at chimney top
+                positions[i * 3] = (Math.random() - 0.5) * 0.15;
+                positions[i * 3 + 1] = 3.4 + Math.random() * 2;
+                positions[i * 3 + 2] = (Math.random() - 0.5) * 0.15;
+                ages[i] = Math.random() * 3.0; // Life age limit
+                sizes[i] = Math.random() * 0.2 + 0.1;
+            }
+
+            smokeGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            smokeGeometry.setAttribute('age', new THREE.BufferAttribute(ages, 1));
+            
+            // Create particle texture using dynamic canvas to bypass external CDN load failures
+            const particleTex = createSmokeTexture();
+
+            smokeMaterial = new THREE.PointsMaterial({
+                size: 0.35,
+                color: 0x94a3b8,
+                transparent: true,
+                opacity: 0.45,
+                map: particleTex,
+                depthWrite: false,
+                blending: THREE.NormalBlending
+            });
+
+            smokeSystem = new THREE.Points(smokeGeometry, smokeMaterial);
+            scene.add(smokeSystem);
+
+            // Drag navigation listeners
+            setupMouseControls();
+
+            // Run initial update
+            updateMetrics();
+
+            // Begin rendering cycle
+            animate();
+        }
+
+        // Generate circular radial gradient texture for smooth smoke representation
+        function createSmokeTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 32;
+            canvas.height = 32;
+            const ctx = canvas.getContext('2d');
+            const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+            grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
+            grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, 32, 32);
+            return new THREE.CanvasTexture(canvas);
+        }
+
+        // Adjusts 3D reactor color profiles dynamically based on slider
+        function updateThreeColors(temp) {
+            if (!kilnMesh) return;
+            // Hot thermal gradient values
+            const percent = (temp - 350) / 150; // 0 to 1
+            
+            // Kiln outer metal body reaction
+            const coldCol = new THREE.Color(0x475569);
+            const hotCol = new THREE.Color(0xb91c1c); // glowing crimson red
+            kilnMesh.material.color.copy(coldCol).lerp(hotCol, percent * 0.55);
+
+            // Biomass internal skeleton glow color transition
+            const bioCold = new THREE.Color(0xeab308); // early golden yellow devolatilizing
+            const bioHot = new THREE.Color(0x06080c); // final dense charcoal black
+            coreBiomass.material.color.copy(bioCold).lerp(bioHot, percent);
+            coreBiomass.material.opacity = 0.2 + (1.0 - percent) * 0.35;
+
+            // Smoke color adjustments
+            if (temp < 400) {
+                smokeMaterial.color.setHex(0xe2e8f0); // Dense grey-white steam
+                smokeMaterial.size = 0.4;
+                smokeMaterial.opacity = 0.55;
+            } else if (temp >= 400 && temp < 450) {
+                smokeMaterial.color.setHex(0x94a3b8); // Translucent
+                smokeMaterial.size = 0.3;
+                smokeMaterial.opacity = 0.3;
+            } else {
+                smokeMaterial.color.setHex(0x38bdf8); // Clean light blue emissions
+                smokeMaterial.size = 0.2;
+                smokeMaterial.opacity = 0.25;
+            }
+        }
+
+        // Drag orbits variables
+        let isDragging = false;
+        let previousMousePosition = { x: 0, y: 0 };
+        let cameraRadius = 10;
+        let theta = 0.8; // Horizontal angle
+        let phi = 1.1; // Vertical angle
+
+        function setupMouseControls() {
+            const dom = renderer.domElement;
+
+            dom.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                autoRotateActive = false;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            dom.addEventListener('mousemove', (e) => {
+                if (!isDragging) return;
+                const deltaMove = {
+                    x: e.clientX - previousMousePosition.x,
+                    y: e.clientY - previousMousePosition.y
+                };
+
+                theta -= deltaMove.x * 0.007;
+                phi -= deltaMove.y * 0.007;
+
+                // Clamp vertical limits to avoid visual inversion
+                phi = Math.max(0.2, Math.min(Math.PI / 2 - 0.05, phi));
+
+                updateCameraPos();
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            // Touch events for mobile screens
+            dom.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1) {
+                    isDragging = true;
+                    autoRotateActive = false;
+                    previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+                }
+            }, { passive: true });
+
+            dom.addEventListener('touchmove', (e) => {
+                if (!isDragging || e.touches.length !== 1) return;
+                const deltaMove = {
+                    x: e.touches[0].clientX - previousMousePosition.x,
+                    y: e.touches[0].clientY - previousMousePosition.y
+                };
+
+                theta -= deltaMove.x * 0.009;
+                phi -= deltaMove.y * 0.009;
+                phi = Math.max(0.2, Math.min(Math.PI / 2 - 0.05, phi));
+
+                updateCameraPos();
+                previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+            }, { passive: true });
+
+            dom.addEventListener('touchend', () => {
+                isDragging = false;
+            });
+
+            // Auto orbit switch
+            document.getElementById('btnRotate').addEventListener('click', () => {
+                autoRotateActive = !autoRotateActive;
+                const icon = document.querySelector('#btnRotate i');
+                if (autoRotateActive) {
+                    icon.className = "fa-solid fa-arrows-spin animate-spin-slow";
+                } else {
+                    icon.className = "fa-solid fa-ban";
+                }
+            });
+
+            // Reset view button
+            document.getElementById('btnResetCamera').addEventListener('click', () => {
+                theta = 0.8;
+                phi = 1.1;
+                updateCameraPos();
+            });
+        }
+
+        function updateCameraPos() {
+            camera.position.x = cameraRadius * Math.sin(phi) * Math.sin(theta);
+            camera.position.y = cameraRadius * Math.cos(phi);
+            camera.position.z = cameraRadius * Math.sin(phi) * Math.cos(theta);
+            camera.lookAt(0, 1.2, 0);
+        }
+
+        // Main Animation Render Loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Particle System Simulation logic (Rising smoke out of chimney exhaust)
+            if (smokeSystem) {
+                const positions = smokeSystem.geometry.attributes.position.array;
+                const count = positions.length / 3;
+
+                // Adjust speed based on temperature
+                const smokeVelocityY = 0.02 + ((currentTemp - 350) / 150) * 0.015;
+
+                for (let i = 0; i < count; i++) {
+                    positions[i * 3 + 1] += smokeVelocityY; // Rising
+                    
+                    // Wind draft drift factor
+                    positions[i * 3] += Math.sin(positions[i * 3 + 1] * 2 + i) * 0.006;
+
+                    // If particles exceed boundaries, recycle back down to chimney top
+                    if (positions[i * 3 + 1] > 6.0) {
+                        positions[i * 3] = (Math.random() - 0.5) * 0.15;
+                        positions[i * 3 + 1] = 3.4;
+                        positions[i * 3 + 2] = (Math.random() - 0.5) * 0.15;
+                    }
+                }
+                smokeSystem.geometry.attributes.position.needsUpdate = true;
+            }
+
+            // Auto-Rotate logic
+            if (autoRotateActive && !isDragging) {
+                theta += 0.0025;
+                updateCameraPos();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Handle browser window resize dynamically to maintain proper canvas size ratios
+        window.addEventListener('resize', () => {
+            if (!camera || !renderer) return;
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+            renderer.setSize(width, height);
+        });
+
+        // Initialize visualization when window loading is complete
+        window.onload = function() {
+            init3D();
+        };
+    </script>
+</body>
+</html>
